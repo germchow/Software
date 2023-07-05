@@ -38,15 +38,17 @@ StartState --> AlignPlacementState : [!shouldKickOffWall]
 KickOffWallState --> AlignPlacementState : [!shouldKickOffWall]
 KickOffWallState --> KickOffWallState : [!kickDone]\n<i>kickOffWall</i>
 KickOffWallState --> StartState : [kickDone]
+AlignPlacementState --> KickOffWallState : [shouldKickOffWall]\n<i>kickOffWall</i>
 AlignPlacementState --> AlignPlacementState : [!alignDone]\n<i>alignPlacement</i>
 AlignPlacementState --> PlaceBallState : [alignDone]
 PlaceBallState --> StartState : [shouldKickOffWall]
 PlaceBallState --> PlaceBallState : [!ballPlaced]\n<i>placeBall</i>
 PlaceBallState --> WaitState : [ballPlaced]\n<i>startWait</i>
-WaitState --> RetreatState : [waitDone]\n<i>retreat</i>
 WaitState --> WaitState : [!waitDone]
-RetreatState --> StartState : [!ballPlaced]
-RetreatState --> Terminate:::terminate : [ballPlaced]\n<i>retreat</i>
+WaitState --> RetreatState : [waitDone]
+RetreatState --> Terminate:::terminate : [retreatDone_G&&ballPlaced]
+RetreatState --> RetreatState : [!ballPlaced]\n<i>placeBall</i>
+RetreatState --> RetreatState : [ballPlaced]\n<i>retreat</i>
 Terminate:::terminate --> StartState : [!ballPlaced]
 
 ```
@@ -74,6 +76,29 @@ direction LR
 [*] --> DefenseState
 DefenseState --> DefenseState : <i>defendAgainstThreats</i>
 Terminate:::terminate --> Terminate:::terminate
+
+```
+
+## [FreeKickPlayFSM](/src/software/ai/hl/stp/play/free_kick/free_kick_play_fsm.h)
+
+```mermaid
+
+stateDiagram-v2
+classDef terminate fill:white,color:black,font-weight:bold
+direction LR
+[*] --> SetupPositionState
+SetupPositionState --> SetupPositionState : [!setupDone]\n<i>setupPosition</i>
+SetupPositionState --> ShootState : [shotFound]
+ShootState --> ShootState : [!shotDone]\n<i>shootBall</i>
+ShootState --> Terminate:::terminate : [shotDone]
+SetupPositionState --> AttemptPassState : <i>startLookingForPass</i>
+AttemptPassState --> ChipState : [timeExpired]
+AttemptPassState --> AttemptPassState : [!passFound]\n<i>lookForPass</i>
+AttemptPassState --> PassState : [passFound]
+PassState --> PassState : [!passDone]\n<i>passBall</i>
+PassState --> Terminate:::terminate : [passDone]
+ChipState --> ChipState : [!chipDone]\n<i>chipBall</i>
+ChipState --> Terminate:::terminate : [chipDone]
 
 ```
 
@@ -105,6 +130,21 @@ SetupPositionState --> SetupPositionState : [!setupPositionDone]\n<i>setupPositi
 SetupPositionState --> PerformKickState : [setupPositionDone]
 PerformKickState --> PerformKickState : [!kickDone]\n<i>performKick</i>
 PerformKickState --> Terminate:::terminate : [kickDone]
+Terminate:::terminate --> Terminate:::terminate
+
+```
+
+## [PenaltyKickEnemyPlayFSM](/src/software/ai/hl/stp/play/penalty_kick_enemy/penalty_kick_enemy_play_fsm.h)
+
+```mermaid
+
+stateDiagram-v2
+classDef terminate fill:white,color:black,font-weight:bold
+direction LR
+[*] --> SetupPositionState
+SetupPositionState --> SetupPositionState : [!setupPositionDone]\n<i>setupPosition</i>
+SetupPositionState --> DefendKickState : [setupPositionDone]\n<i>defendKick</i>
+DefendKickState --> DefendKickState : <i>defendKick</i>
 Terminate:::terminate --> Terminate:::terminate
 
 ```
@@ -220,6 +260,7 @@ classDef terminate fill:white,color:black,font-weight:bold
 direction LR
 [*] --> PositionToBlock
 PositionToBlock --> MoveToGoalLine : [shouldMoveToGoalLine]\n<i>moveToGoalLine</i>
+PositionToBlock --> PivotKickFSM : [shouldEvacuateCrease]\n<i>updatePivotKick</i>
 PositionToBlock --> Panic : [shouldPanic]\n<i>panic</i>
 PositionToBlock --> PivotKickFSM : [shouldPivotChip]\n<i>updatePivotKick</i>
 PositionToBlock --> PositionToBlock : <i>positionToBlock</i>
@@ -228,8 +269,8 @@ Panic --> PivotKickFSM : [shouldPivotChip]\n<i>updatePivotKick</i>
 Panic --> PositionToBlock : [panicDone]\n<i>positionToBlock</i>
 Panic --> Panic : <i>panic</i>
 PivotKickFSM --> MoveToGoalLine : [shouldMoveToGoalLine]\n<i>moveToGoalLine</i>
-PivotKickFSM --> PivotKickFSM : [ballInDefenseArea]\n<i>updatePivotKick</i>
-PivotKickFSM --> PositionToBlock : [!ballInDefenseArea]\n<i>positionToBlock</i>
+PivotKickFSM --> PivotKickFSM : [ballInInflatedDefenseArea]\n<i>updatePivotKick</i>
+PivotKickFSM --> PositionToBlock : [!ballInInflatedDefenseArea]\n<i>positionToBlock</i>
 MoveToGoalLine --> MoveToGoalLine : [shouldMoveToGoalLine]\n<i>moveToGoalLine</i>
 MoveToGoalLine --> PositionToBlock : [!shouldMoveToGoalLine]\n<i>positionToBlock</i>
 Terminate:::terminate --> Terminate:::terminate
@@ -292,7 +333,7 @@ classDef terminate fill:white,color:black,font-weight:bold
 direction LR
 [*] --> DribbleFSM
 DribbleFSM --> DribbleFSM : [!takePenaltyShot]\n<i>updateApproachKeeper</i>
-DribbleFSM --> KickFSM : [timeOutApproach]
+DribbleFSM --> KickFSM : [timeOutApproach]\n<i>shoot</i>
 DribbleFSM --> DribbleFSM : <i>adjustOrientationForShot</i>
 DribbleFSM --> KickFSM
 KickFSM --> KickFSM : <i>shoot</i>
