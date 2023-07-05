@@ -24,6 +24,33 @@ Terminate:::terminate --> Terminate:::terminate
 
 ```
 
+## [BallPlacementPlayFSM](/src/software/ai/hl/stp/play/ball_placement/ball_placement_play_fsm.h)
+
+```mermaid
+
+stateDiagram-v2
+classDef terminate fill:white,color:black,font-weight:bold
+direction LR
+[*] --> StartState
+StartState --> KickOffWallState : [shouldKickOffWall]
+[*] --> StartState
+StartState --> AlignPlacementState : [!shouldKickOffWall]
+KickOffWallState --> AlignPlacementState : [!shouldKickOffWall]
+KickOffWallState --> KickOffWallState : [!kickDone]\n<i>kickOffWall</i>
+KickOffWallState --> StartState : [kickDone]
+AlignPlacementState --> AlignPlacementState : [!alignDone]\n<i>alignPlacement</i>
+AlignPlacementState --> PlaceBallState : [alignDone]
+PlaceBallState --> StartState : [shouldKickOffWall]
+PlaceBallState --> PlaceBallState : [!ballPlaced]\n<i>placeBall</i>
+PlaceBallState --> WaitState : [ballPlaced]\n<i>startWait</i>
+WaitState --> RetreatState : [waitDone]\n<i>retreat</i>
+WaitState --> WaitState : [!waitDone]
+RetreatState --> StartState : [!ballPlaced]
+RetreatState --> Terminate:::terminate : [ballPlaced]\n<i>retreat</i>
+Terminate:::terminate --> StartState : [!ballPlaced]
+
+```
+
 ## [CreaseDefensePlayFSM](/src/software/ai/hl/stp/play/crease_defense/crease_defense_play_fsm.h)
 
 ```mermaid
@@ -78,21 +105,6 @@ SetupPositionState --> SetupPositionState : [!setupPositionDone]\n<i>setupPositi
 SetupPositionState --> PerformKickState : [setupPositionDone]
 PerformKickState --> PerformKickState : [!kickDone]\n<i>performKick</i>
 PerformKickState --> Terminate:::terminate : [kickDone]
-Terminate:::terminate --> Terminate:::terminate
-
-```
-
-## [PenaltyKickEnemyPlayFSM](/src/software/ai/hl/stp/play/penalty_kick_enemy/penalty_kick_enemy_play_fsm.h)
-
-```mermaid
-
-stateDiagram-v2
-classDef terminate fill:white,color:black,font-weight:bold
-direction LR
-[*] --> SetupPositionState
-SetupPositionState --> SetupPositionState : [!setupPositionDone]\n<i>setupPosition</i>
-SetupPositionState --> DefendKickState : [setupPositionDone]\n<i>defendKick</i>
-DefendKickState --> DefendKickState : <i>defendKick</i>
 Terminate:::terminate --> Terminate:::terminate
 
 ```
@@ -280,7 +292,7 @@ classDef terminate fill:white,color:black,font-weight:bold
 direction LR
 [*] --> DribbleFSM
 DribbleFSM --> DribbleFSM : [!takePenaltyShot]\n<i>updateApproachKeeper</i>
-DribbleFSM --> KickFSM : [timeOutApproach]\n<i>shoot</i>
+DribbleFSM --> KickFSM : [timeOutApproach]
 DribbleFSM --> DribbleFSM : <i>adjustOrientationForShot</i>
 DribbleFSM --> KickFSM
 KickFSM --> KickFSM : <i>shoot</i>
