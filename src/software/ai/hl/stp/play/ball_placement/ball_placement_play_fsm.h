@@ -44,8 +44,8 @@ struct BallPlacementPlayFSM
     void kickOffWall(const Update& event);
 
     /**
-     * Action that moves the robot so that it is aligned to dribble straight to the
-     * placement point
+     * Action that finds a point where the ball's current position aligns with the ball placement position, and
+     * moves the robot so that it is aligned to dribble straight directly to the placement point
      *
      * @param event the BallPlacementPlayFSM Update event
      */
@@ -169,26 +169,22 @@ struct BallPlacementPlayFSM
 
         return make_transition_table(
             // src_state + event [guard] / action = dest_state
-            *StartState_S + Update_E[shouldKickOffWall_G]       = KickOffWallState_S,
-            *StartState_S + Update_E[!shouldKickOffWall_G]      = AlignPlacementState_S,
-            KickOffWallState_S + Update_E[!shouldKickOffWall_G] = AlignPlacementState_S,
+            *StartState_S + Update_E[!shouldKickOffWall_G] / alignPlacement_A = AlignPlacementState_S,
+            StartState_S + Update_E[shouldKickOffWall_G] = KickOffWallState_S,
             KickOffWallState_S + Update_E[!kickDone_G] / kickOffWall_A =
                 KickOffWallState_S,
-            KickOffWallState_S + Update_E[kickDone_G] = StartState_S,
-            AlignPlacementState_S + Update_E[shouldKickOffWall_G] / kickOffWall_A =
-                KickOffWallState_S,
+            KickOffWallState_S + Update_E[!shouldKickOffWall_G] / alignPlacement_A = AlignPlacementState_S,
+            AlignPlacementState_S + Update_E[shouldKickOffWall_G] = KickOffWallState_S,
             AlignPlacementState_S + Update_E[!alignDone_G] / alignPlacement_A =
                 AlignPlacementState_S,
             AlignPlacementState_S + Update_E[alignDone_G]            = PlaceBallState_S,
-            PlaceBallState_S + Update_E[shouldKickOffWall_G]         = StartState_S,
             PlaceBallState_S + Update_E[!ballPlaced_G] / placeBall_A = PlaceBallState_S,
             PlaceBallState_S + Update_E[ballPlaced_G] / startWait_A  = WaitState_S,
             WaitState_S + Update_E[!waitDone_G]                      = WaitState_S,
             WaitState_S + Update_E[waitDone_G]                       = RetreatState_S,
             RetreatState_S + Update_E[retreatDone_G && ballPlaced_G] = X,
             RetreatState_S + Update_E[!ballPlaced_G] / placeBall_A   = RetreatState_S,
-            RetreatState_S + Update_E[ballPlaced_G] / retreat_A      = RetreatState_S,
-            X + Update_E[!ballPlaced_G]                              = StartState_S);
+            RetreatState_S + Update_E[ballPlaced_G] / retreat_A      = RetreatState_S);
     }
 
    private:
