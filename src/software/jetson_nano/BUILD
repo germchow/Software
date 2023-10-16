@@ -53,7 +53,6 @@ cc_binary(
     deps = [
         ":thunderloop",
         "//shared:constants",
-        "@boost//:program_options",
     ],
 )
 

@@ -2,7 +2,6 @@
 #include <g3log/logmessage.hpp>
 #include <iostream>
 
-#include "software/logger/log_merger.h"
 #include "software/util/make_enum/make_enum.h"
 
 MAKE_ENUM(FG_Colour, YELLOW, RED, GREEN, WHITE);
@@ -30,18 +29,11 @@ class ColouredCoutSink
     static std::string colourToString(const FG_Colour colour);
     /**
      * This function is called on every call to LOG(). Displays coloured log messages in
-     * the terminal. Merges repeated messages to display later
+     * the terminal
      *
      * @params log_entry the message received on a LOG() call
      */
     void displayColouredLog(g3::LogMessageMover log_entry);
-
-    /**
-     * Displays a single coloured log message in the terminal, without merging.
-     *
-     * @params log the LogMessage to output
-     */
-    void displaySingleLog(g3::LogMessage &log);
 
    private:
     /**
@@ -62,6 +54,4 @@ class ColouredCoutSink
      * log message
      */
     bool print_detailed;
-
-    LogMerger log_merger;
 };

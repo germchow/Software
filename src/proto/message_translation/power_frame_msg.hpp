@@ -4,7 +4,6 @@
 #include <pb_encode.h>
 #include <proto/power_frame_msg.nanopb.h>
 
-#include <cmath>
 #include <cstdint>
 #include <memory>
 #include <unordered_map>
@@ -16,7 +15,6 @@
 #include "proto/power_frame_msg.pb.h"
 #include "proto/primitive.pb.h"
 #include "proto/primitive/primitive_types.h"
-#include "shared/constants.h"
 
 extern "C"
 {
@@ -123,15 +121,11 @@ TbotsProto_PowerStatus inline createNanoPbPowerStatus(
  */
 
 TbotsProto_PowerPulseControl inline createNanoPbPowerPulseControl(
-    const TbotsProto::PowerControl& google_control, double kick_coeff, int kick_constant,
+    const TbotsProto::PowerControl& google_control, int kick_slope, int kick_constant,
     int chip_pulse_width)
 {
     TbotsProto_PowerPulseControl nanopb_control =
         TbotsProto_PowerPulseControl_init_default;
-
-    // Safety bounds
-    kick_constant = std::min(kick_constant, MAX_KICK_CONSTANT);
-    kick_coeff    = std::min(kick_coeff, MAX_KICK_COEFFICIENT);
 
     switch (google_control.chicker().chicker_command_case())
     {
@@ -139,9 +133,9 @@ TbotsProto_PowerPulseControl inline createNanoPbPowerPulseControl(
             nanopb_control.chicker.which_chicker_command =
                 TbotsProto_PowerPulseControl_ChickerControl_kick_pulse_width_tag;
             nanopb_control.chicker.chicker_command.kick_pulse_width =
-                static_cast<uint32_t>(
-                    kick_constant *
-                    std::exp(kick_coeff * google_control.chicker().kick_speed_m_per_s()));
+                kick_slope *
+                    static_cast<uint32_t>(google_control.chicker().kick_speed_m_per_s()) +
+                kick_constant;
             break;
         case TbotsProto::PowerControl::ChickerControl::kChipDistanceMeters:
             nanopb_control.chicker.which_chicker_command =
@@ -158,11 +152,12 @@ TbotsProto_PowerPulseControl inline createNanoPbPowerPulseControl(
                         .which_auto_chip_or_kick =
                         TbotsProto_PowerPulseControl_AutoChipOrKick_autokick_pulse_width_tag;
                     nanopb_control.chicker.chicker_command.auto_chip_or_kick
-                        .auto_chip_or_kick.autokick_pulse_width = static_cast<uint32_t>(
-                        kick_constant *
-                        std::exp(kick_coeff * google_control.chicker()
-                                                  .auto_chip_or_kick()
-                                                  .autokick_speed_m_per_s()));
+                        .auto_chip_or_kick.autokick_pulse_width =
+                        kick_slope *
+                            static_cast<uint32_t>(google_control.chicker()
+                                                      .auto_chip_or_kick()
+                                                      .autokick_speed_m_per_s()) +
+                        kick_constant;
                     break;
                 case TbotsProto::AutoChipOrKick::kAutochipDistanceMeters:
                     nanopb_control.chicker.chicker_command.auto_chip_or_kick

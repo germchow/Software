@@ -169,16 +169,13 @@ class EnlsvgPathPlanner
      * Returns the closest unblocked internal coordinate for a point. It may return the
      * given point itself.
      *
-     * @param ep an internal point to find the closest unblocked point to
-     * @param other_point If ep is blocked, then we will try to find the closest unblocked
-     * towards this point. It is used to reduce the chance of the start point moving
-     * further away from the end point (or vise versa).
+     * @param ep an internal point to investigate
      *
      * @return std::optional<EnlsvgPoint>    returns std::nullopt if the entire field is
      * blocked, or an internal grid coordinate representing a closest unblocked location
      */
     std::optional<EnlsvgPoint> findClosestUnblockedEnlsvgPoint(
-        const EnlsvgPoint &ep, const EnlsvgPoint &other_point) const;
+        const EnlsvgPoint &ep) const;
 
     /*
      * Returns true if a given internal coordinate is blocked, false otherwise.

@@ -306,14 +306,6 @@ def load_command_line_arguments():
     )
 
     parser.add_argument(
-        "--channel",
-        action="store",
-        type=int,
-        default=0,
-        help="Which channel to communicate over",
-    )
-
-    parser.add_argument(
         "--estop_path",
         action="store",
         type=str,
@@ -374,7 +366,7 @@ def field_test_runner():
         should_restart_on_crash=False,
     ) as friendly_fs, RobotCommunication(
         current_proto_unix_io=friendly_proto_unix_io,
-        multicast_channel=getRobotMulticastChannel(args.channel),
+        multicast_channel=getRobotMulticastChannel(0),
         interface=args.interface,
         disable_estop=False,
     ) as rc_friendly:

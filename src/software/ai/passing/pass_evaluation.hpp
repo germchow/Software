@@ -50,13 +50,6 @@ class PassEvaluation
     PassWithRating getBestPassOnField() const;
 
     /**
-     * Get the best pass and its zone on the entire field
-     *
-     * @return a pair containing the zone and the PassWithRating containing the best pass
-     */
-    std::pair<ZoneEnum, PassWithRating> getBestPassAndZoneOnField() const;
-
-    /**
      * Given a set of zone_ids, returns the best PassWithRating in those zones
      *
      * @throws std::invalid_argument if the zone_ids set is empty or if the zone_ids
@@ -116,8 +109,7 @@ PassEvaluation<ZoneEnum>::PassEvaluation(
 }
 
 template <class ZoneEnum>
-std::pair<ZoneEnum, PassWithRating> PassEvaluation<ZoneEnum>::getBestPassAndZoneOnField()
-    const
+PassWithRating PassEvaluation<ZoneEnum>::getBestPassOnField() const
 {
     auto best_pass =
         std::max_element(best_pass_in_zones_.begin(), best_pass_in_zones_.end(),
@@ -125,14 +117,7 @@ std::pair<ZoneEnum, PassWithRating> PassEvaluation<ZoneEnum>::getBestPassAndZone
                             const std::pair<ZoneEnum, PassWithRating>& p2) {
                              return p1.second.rating < p2.second.rating;
                          });
-    return *best_pass;
-}
-
-template <class ZoneEnum>
-PassWithRating PassEvaluation<ZoneEnum>::getBestPassOnField() const
-{
-    auto best_pass_and_zone = getBestPassAndZoneOnField();
-    return best_pass_and_zone.second;
+    return best_pass->second;
 }
 
 template <class ZoneEnum>
