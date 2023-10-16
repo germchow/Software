@@ -49,7 +49,7 @@ def ball_placement_play_setup(
     blue_play = Play()
     blue_play.name = PlayName.BallPlacementPlay
 
-    # TODO (#3019): Reenable enemy ai after enemy ball placement is fixed
+    # TODO (#3019): Re-enable enemy ai after enemy ball placement is fixed
     yellow_play = Play()
     yellow_play.name = PlayName.HaltPlay
 
